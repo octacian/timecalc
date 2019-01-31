@@ -11,11 +11,6 @@ type Factor interface {
 	Raw() float64
 	SetRaw(raw float64)
 	String() string
-
-	Add(factor Factor) error
-	Subtract(factor Factor) error
-	//Multiply(factor Factor) error
-	//Divide(factor Factor) error
 }
 
 // NumberRegex represents any normal number in a mathematical statement
@@ -51,26 +46,6 @@ func (n Number) Raw() float64 {
 // SetRaw sets the value of the number given a raw float64
 func (n *Number) SetRaw(raw float64) {
 	n.value = raw
-}
-
-// Add takes another factor and adds it to the current
-func (n *Number) Add(factor Factor) error {
-	raw := n.Raw()
-	factorRaw := factor.Raw()
-
-	n.SetRaw(raw + factorRaw)
-
-	return nil
-}
-
-// Subtract takes another factor and subtracts it from the current
-func (n *Number) Subtract(factor Factor) error {
-	raw := n.Raw()
-	factorRaw := factor.Raw()
-
-	n.SetRaw(raw - factorRaw)
-
-	return nil
 }
 
 // TimeRegex represents an arbitrary time down to the second
@@ -115,26 +90,6 @@ func (t Time) String() string {
 	//}
 
 	return fmt.Sprintf("%v:%v:%v", fieldToString(t.Hour), fieldToString(t.Minute), fieldToString(t.Second))
-}
-
-// Add takes another factor and adds it to the current
-func (t *Time) Add(factor Factor) error {
-	raw := t.Raw()
-	factorRaw := factor.Raw()
-
-	t.SetRaw(raw + factorRaw)
-
-	return nil
-}
-
-// Subtract takes another factor and subtracts it from the current
-func (t *Time) Subtract(factor Factor) error {
-	raw := t.Raw()
-	factorRaw := factor.Raw()
-
-	t.SetRaw(raw - factorRaw)
-
-	return nil
 }
 
 // NewTime takes a string and returns a time or an error

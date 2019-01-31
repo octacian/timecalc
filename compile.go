@@ -15,7 +15,6 @@ func getWeight(factor Factor) int {
 // Compile takes an array of instructions and processes them returning a string
 // for printing to the console.
 func Compile(instructions []*Instruction) string {
-	var err error
 	var out Factor
 	out = &Number{}
 
@@ -23,14 +22,13 @@ func Compile(instructions []*Instruction) string {
 	for _, instruction := range instructions {
 		switch instruction.Operation {
 		case "add":
-			err = out.Add(instruction.Value.(Factor))
+			left := out.Raw()
+			right := instruction.Value.Raw()
+			out.SetRaw(left + right)
 		case "subtract":
-			err = out.Subtract(instruction.Value.(Factor))
-		}
-
-		// if error is detected, panic
-		if err != nil {
-			panic(err)
+			left := out.Raw()
+			right := instruction.Value.Raw()
+			out.SetRaw(left - right)
 		}
 
 		// if value has a greater weight than current output type, convert to this type
