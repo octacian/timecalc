@@ -82,33 +82,17 @@ type Time struct {
 
 // Raw returns the value of a Time as a 64-bit float for processing
 func (t Time) Raw() float64 {
-	return float64(t.Second)/3600 + float64(t.Minute)/60 + float64(t.Hour)
+	return float64(t.Hour * 3600 + t.Minute * 60 + t.Second)
 }
 
 // SetRaw sets the value of the Time given a float64
 func (t *Time) SetRaw(raw float64) {
-	// TODO: Fix 0:00:30 + 0.5 = 00:31 (should be 00:30:30)
-	// TODO: Fix 0:00:20 + 0:00:50 = 0:00:60
-	PrintDebug(fmt.Sprintf("SetRaw to %f\n", raw))
-	t.Hour = int(math.Floor(raw))
-	raw -= float64(t.Hour)
-	PrintDebug(fmt.Sprintf("|- Total Hours = %v\n", t.Hour))
-
-	seconds := float64(raw * 3600)
-	PrintDebug(fmt.Sprintf("|- Total Seconds = %f\n", seconds))
-	minutes := seconds / 60
-	PrintDebug(fmt.Sprintf("|- Total Minutes = %f\n", minutes))
-	if minutes > 1 {
-		seconds -= minutes * 60
-	} else {
-		minutes = 0
-	}
-	PrintDebug(fmt.Sprintf("|- Remaining Seconds = %f\n", seconds))
-
-	t.Minute = int(minutes + 0.5)
-	PrintDebug(fmt.Sprintf("|- Set Minutes to %v\n", t.Minute))
-	t.Second = int(seconds + 0.5)
-	PrintDebug(fmt.Sprintf("|- Set Seconds to %v\n\n", t.Second))
+	rawInt := int(raw)
+	PrintDebug(fmt.Sprintf("SetRaw to %f (simplified to %d)\n", raw, rawInt))
+	t.Hour = rawInt / 3600
+	t.Minute = rawInt % 3600 / 60
+	t.Second = rawInt % 3600 % 60
+	PrintDebug(fmt.Sprintf("|- %s\n", t))
 }
 
 func fieldToString(field int) string {
