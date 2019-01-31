@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 )
 
 // Token represents a part of some user input
@@ -24,19 +23,14 @@ func Tokenize(str string) ([]*Token, error) {
 			next = string(str[i+1])
 		}
 
-		operator := regexp.MustCompile(`^(\+|\-|\*|\/)$`)
-		time := regexp.MustCompile(`^([\d][\d]?)?:([\d][\d])?:?(?::([\d][\d]))?$`)
-		number := regexp.MustCompile(`^((\d+)?\.?)\d+$`)
-		whitespace := regexp.MustCompile(`^([\s])$`)
-
-		if operator.MatchString(c) {
+		if OperatorRegex.MatchString(c) {
 			tokens = append(tokens, &Token{"operator", c})
 
-			if operator.MatchString(next) {
+			if OperatorRegex.MatchString(next) {
 				return nil, fmt.Errorf("invalid token set")
 			}
-		} else if number.MatchString(c) {
-			if number.MatchString(next) || next == ":" || next == "." {
+		} else if NumberRegex.MatchString(c) {
+			if NumberRegex.MatchString(next) || next == ":" || next == "." {
 				last += c
 				continue
 			} else if last != "" {
@@ -61,16 +55,16 @@ func Tokenize(str string) ([]*Token, error) {
 			if next == ")" || next == "]" {
 				return nil, fmt.Errorf("invalid token set")
 			}
-		} else if whitespace.MatchString(c) {
+		} else if WhitespaceRegex.MatchString(c) {
 			tokens = append(tokens, &Token{"whitespace", c})
 		} else {
 			return tokens, fmt.Errorf("tokenize: invalid charactor: %v", c)
 		}
 
-		if last != "" && !(number.MatchString(next) || next == ":" || next == ".") {
-			if number.MatchString(last) {
+		if last != "" && !(NumberRegex.MatchString(next) || next == ":" || next == ".") {
+			if NumberRegex.MatchString(last) {
 				tokens = append(tokens, &Token{"number", last})
-			} else if time.MatchString(last) {
+			} else if TimeRegex.MatchString(last) {
 				tokens = append(tokens, &Token{"time", last})
 			} else {
 				return nil, fmt.Errorf("invalid token set (in final append)")

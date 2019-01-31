@@ -4,8 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 )
 
+var OperatorRegex = regexp.MustCompile(`^(\+|\-|\*|\/)$`)
+var TimeRegex = regexp.MustCompile(`^([\d][\d]?)?:([\d][\d])?:?(?::([\d][\d]))?$`)
+var NumberRegex = regexp.MustCompile(`^((\d+)?\.?)\d+$`)
+var WhitespaceRegex = regexp.MustCompile(`^([\s])$`)
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print(">>> ")
