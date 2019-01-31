@@ -130,23 +130,14 @@ type Instruction struct {
 // Parse takes an array of tokens and returns an array of instructions
 func Parse(tokens []*Token) ([]*Instruction, error) {
 	instructions := make([]*Instruction, 0)
-	current := &Instruction{Operation: "add"}
+	current := &Instruction{Operation: "+"}
 
 	for _, v := range tokens {
 		switch v.Type {
 		case "whitespace":
 			continue
 		case "operator":
-			switch v.Value {
-			case "+":
-				current.Operation = "add"
-			case "-":
-				current.Operation = "subtract"
-			case "*":
-				current.Operation = "multiply"
-			case "/":
-				current.Operation = "divide"
-			}
+			current.Operation = v.Value
 		case "number":
 			val, err := strconv.ParseFloat(v.Value, 64)
 			if err != nil {
@@ -164,7 +155,7 @@ func Parse(tokens []*Token) ([]*Instruction, error) {
 		// if Value has been set, add to output
 		if current.Value != nil {
 			instructions = append(instructions, current)
-			current = &Instruction{Operation: "add"}
+			current = &Instruction{Operation: "+"}
 		}
 	}
 

@@ -39,7 +39,6 @@ func Tokenize(str string) ([]*Token, error) {
 
 			if last == "" {
 				tokens = append(tokens, &Token{"number", c})
-				fmt.Println("Appending number by itself")
 			}
 		} else if c == ":" || c == "." {
 			last += c

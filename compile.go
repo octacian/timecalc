@@ -21,19 +21,19 @@ func Compile(instructions []*Instruction) string {
 	// Loop through instructions and apply them to out
 	for _, instruction := range instructions {
 		switch instruction.Operation {
-		case "add":
+		case "+":
 			left := out.Raw()
 			right := instruction.Value.Raw()
 			out.SetRaw(left + right)
-		case "subtract":
+		case "-":
 			left := out.Raw()
 			right := instruction.Value.Raw()
 			out.SetRaw(left - right)
-		case "multiply":
+		case "*":
 			left := out.Raw()
 			right := instruction.Value.Raw()
 			out.SetRaw(left * right)
-		case "divide":
+		case "/":
 			left := out.Raw()
 			right := instruction.Value.Raw()
 			out.SetRaw(left / right)
