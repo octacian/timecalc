@@ -142,6 +142,10 @@ func Parse(tokens []*Token) ([]*Instruction, error) {
 				current.Operation = "add"
 			case "-":
 				current.Operation = "subtract"
+			case "*":
+				current.Operation = "multiply"
+			case "/":
+				current.Operation = "divide"
 			}
 		case "number":
 			val, err := strconv.ParseFloat(v.Value, 64)

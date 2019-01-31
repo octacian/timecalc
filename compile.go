@@ -29,6 +29,14 @@ func Compile(instructions []*Instruction) string {
 			left := out.Raw()
 			right := instruction.Value.Raw()
 			out.SetRaw(left - right)
+		case "multiply":
+			left := out.Raw()
+			right := instruction.Value.Raw()
+			out.SetRaw(left * right)
+		case "divide":
+			left := out.Raw()
+			right := instruction.Value.Raw()
+			out.SetRaw(left / right)
 		}
 
 		// if value has a greater weight than current output type, convert to this type
