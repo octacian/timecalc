@@ -1,5 +1,7 @@
 package main
 
+import "math"
+
 // getWeight takes a Factor and returns its importance
 func getWeight(factor Factor) int {
 	switch factor.(type) {
@@ -42,6 +44,10 @@ func Compile(instructions []*Instruction) Factor {
 			left := out.Raw()
 			right := value.(Factor).Raw()
 			out.SetRaw(left / right)
+		case "%":
+			left := out.Raw()
+			right := value.(Factor).Raw()
+			out.SetRaw(math.Mod(left, right))
 		}
 
 		// if value has a greater weight than current output type, convert to this type
