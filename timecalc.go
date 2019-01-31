@@ -23,17 +23,35 @@ var NumberRegex = regexp.MustCompile(`^((\d+)?\.?)\d+$`)
 var WhitespaceRegex = regexp.MustCompile(`^([\s])$`)
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(">>> ")
-	text, _ := reader.ReadString('\n')
-	tokens, err := Tokenize(text)
-	if err != nil {
-		fmt.Print(err)
-	} else {
-		fmt.Print(Reconstruct(tokens))
 	if os.Getenv("DEBUG") == "TRUE" {
 		DEBUG = true
 		fmt.Println("Debug mode enabled.")
 	}
+
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print(">>> ")
+		text, _ := reader.ReadString('\n')
+		tokens, err := Tokenize(text)
+		if err != nil {
+			fmt.Print(err, "\n")
+		} else {
+			if DEBUG {
+				fmt.Println(Reconstruct(tokens, true))
+			}
+
+			instructions, err := Parse(tokens)
+
+			if DEBUG {
+				PrintInstructions(instructions)
+				fmt.Println()
+			}
+
+			if err != nil {
+				fmt.Print(err, "\n")
+			} else {
+				fmt.Println(Compile(instructions))
+			}
+		}
 	}
 }

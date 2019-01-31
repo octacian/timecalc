@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 // Factor represents a single component of a mathematical statement
@@ -124,15 +125,22 @@ func NewTime(time string) (Time, error) {
 // can be another Instruction set, a NumberRegex, or a TimeRegex.
 type Instruction struct {
 	Operation string
-	Value     Factor
+	Value     interface{}
 }
 
-// Parse takes an array of tokens and returns an array of instructions
-func Parse(tokens []*Token) ([]*Instruction, error) {
+// parse takes an array of tokens and returns an array of definitions. Parse calls this function, discarding
+// the second return parameter.
+func parse(tokens []*Token) ([]*Instruction, int, error) {
 	instructions := make([]*Instruction, 0)
 	current := &Instruction{Operation: "+"}
+	ignoreUntil := 0
 
-	for _, v := range tokens {
+	for key, v := range tokens {
+		// if ignoreUntil is set and key specified hasn't yet been reached, skip iteration
+		if ignoreUntil > 0 && key < ignoreUntil {
+			continue
+		}
+
 		switch v.Type {
 		case "whitespace":
 			continue
@@ -150,6 +158,18 @@ func Parse(tokens []*Token) ([]*Instruction, error) {
 				panic(err)
 			}
 			current.Value = &time
+		case "groupOpen":
+			// Recursively loop through instructions until no more recursions can occur and the group closes
+			groupInstructions, groupEnd, err := parse(tokens[key+1:])
+			if err != nil {
+				return nil, 0, err
+			}
+
+			current.Value = groupInstructions
+			ignoreUntil = key + groupEnd + 2
+		case "groupClose":
+			// Group has closed, exit sub-loop and allowing the call stack to retrace to be main loop
+			return instructions, key, nil
 		}
 
 		// if Value has been set, add to output
@@ -159,12 +179,35 @@ func Parse(tokens []*Token) ([]*Instruction, error) {
 		}
 	}
 
-	return instructions, nil
+	return instructions, 0, nil
+}
+
+// Parse takes an array of tokens and returns an array of instructions
+func Parse(tokens []*Token) ([]*Instruction, error) {
+	instructions, _, err := parse(tokens)
+	return instructions, err
 }
 
 // PrintInstructions takes an array of instructions and prints them in plain text
-func PrintInstructions(instructions []*Instruction) {
-	for _, v := range instructions {
-		fmt.Printf("%s: %+v\n\n", v.Operation, v.Value)
+func PrintInstructions(instructions []*Instruction, indentation ...int) {
+	indent := 0
+	if len(indentation) > 0 {
+		indent = indentation[0]
+	}
+
+	if indent == 0 {
+		fmt.Println("start with 0")
+	}
+
+	indentStr := strings.Repeat("  ", indent)
+	for _, instruction := range instructions {
+		// if value is a subset of instructions, loop through with added indentation
+		if _, isList := instruction.Value.([]*Instruction); isList {
+			fmt.Printf("%s%s group (%d items)\n", indentStr, instruction.Operation,
+				len(instruction.Value.([]*Instruction)))
+			PrintInstructions(instruction.Value.([]*Instruction), indent+1)
+		} else {
+			fmt.Printf("%s%s %s\n", indentStr, instruction.Operation, instruction.Value.(Factor))
+		}
 	}
 }

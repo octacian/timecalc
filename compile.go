@@ -12,40 +12,45 @@ func getWeight(factor Factor) int {
 	return 0
 }
 
-// Compile takes an array of instructions and processes them returning a string
-// for printing to the console.
-func Compile(instructions []*Instruction) string {
+// Compile takes an array of instructions and processes them returning an output Factor
+func Compile(instructions []*Instruction) Factor {
 	var out Factor
 	out = &Number{}
 
 	// Loop through instructions and apply them to out
 	for _, instruction := range instructions {
+		value := instruction.Value
+		// if value is a list of sub-instructions, compile those first
+		if _, isList := value.([]*Instruction); isList {
+			value = Compile(value.([]*Instruction))
+		}
+
 		switch instruction.Operation {
 		case "+":
 			left := out.Raw()
-			right := instruction.Value.Raw()
+			right := value.(Factor).Raw()
 			out.SetRaw(left + right)
 		case "-":
 			left := out.Raw()
-			right := instruction.Value.Raw()
+			right := value.(Factor).Raw()
 			out.SetRaw(left - right)
 		case "*":
 			left := out.Raw()
-			right := instruction.Value.Raw()
+			right := value.(Factor).Raw()
 			out.SetRaw(left * right)
 		case "/":
 			left := out.Raw()
-			right := instruction.Value.Raw()
+			right := value.(Factor).Raw()
 			out.SetRaw(left / right)
 		}
 
 		// if value has a greater weight than current output type, convert to this type
-		if getWeight(instruction.Value) > getWeight(out) {
+		if getWeight(value.(Factor)) > getWeight(out) {
 			outRaw := out.Raw()
-			out = instruction.Value
+			out = value.(Factor)
 			out.SetRaw(outRaw)
 		}
 	}
 
-	return out.String()
+	return out
 }
