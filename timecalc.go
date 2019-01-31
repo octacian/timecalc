@@ -18,7 +18,7 @@ func PrintDebug(str string) {
 }
 
 var OperatorRegex = regexp.MustCompile(`^(\+|\-|\*|\/|\%)$`)
-var TimeRegex = regexp.MustCompile(`^([\d][\d]?)?:([\d][\d])?:?(?::([\d][\d]))?$`)
+var TimeRegex = regexp.MustCompile(`^([\d][\d]?)?:([\d][\d])?:?(?::([\d][\d]))?(?:\.([\d]+))?$`)
 var NumberRegex = regexp.MustCompile(`^((\d+)?\.?)\d+$`)
 var WhitespaceRegex = regexp.MustCompile(`^([\s])$`)
 

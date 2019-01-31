@@ -51,23 +51,25 @@ func (n *Number) SetRaw(raw float64) {
 
 // TimeRegex represents an arbitrary time down to the second
 type Time struct {
-	Hour   int
-	Minute int
-	Second int
+	Hour        int
+	Minute      int
+	Second      int
+	Millisecond int
 }
 
 // Raw returns the value of a Time as a 64-bit float for processing
 func (t Time) Raw() float64 {
-	return float64(t.Hour * 3600 + t.Minute * 60 + t.Second)
+	return float64(t.Hour*3600000 + t.Minute*60000 + t.Second*1000 + t.Millisecond)
 }
 
 // SetRaw sets the value of the Time given a float64
 func (t *Time) SetRaw(raw float64) {
 	rawInt := int(raw)
 	PrintDebug(fmt.Sprintf("SetRaw to %f (simplified to %d)\n", raw, rawInt))
-	t.Hour = rawInt / 3600
-	t.Minute = rawInt % 3600 / 60
-	t.Second = rawInt % 3600 % 60
+	t.Hour = rawInt / 3600000
+	t.Minute = rawInt % 3600000 / 60000
+	t.Second = rawInt % 3600000 % 60000 / 1000
+	t.Millisecond = rawInt % 3600000 % 60000 % 1000
 	PrintDebug(fmt.Sprintf("|- %s\n", t))
 }
 
@@ -84,13 +86,38 @@ func fieldToString(field int) string {
 	return converted
 }
 
+func countTrailingZeros(str string) int {
+	count := 0
+	for i := len(str) - 1; i >= 0; i-- {
+		if string(str[i]) == "0" {
+			count++
+		} else {
+			break
+		}
+	}
+
+	return count
+}
+
 // String returns a string representation of the TimeRegex
 func (t Time) String() string {
-	//if t.Second == 0 {
-	//	return fmt.Sprintf("%v:%v", fieldToString(t.Hour), fieldToString(t.Minute))
-	//}
+	if t.Second == 0 && t.Millisecond == 0 {
+		return fmt.Sprintf("%v:%v", fieldToString(t.Hour), fieldToString(t.Minute))
+	}
 
-	return fmt.Sprintf("%v:%v:%v", fieldToString(t.Hour), fieldToString(t.Minute), fieldToString(t.Second))
+	if t.Millisecond == 0 {
+		return fmt.Sprintf("%v:%v:%v", fieldToString(t.Hour), fieldToString(t.Minute), fieldToString(t.Second))
+	}
+
+	millisecond := fmt.Sprintf("%d", t.Millisecond)
+	if t.Millisecond < 10 {
+		millisecond = fmt.Sprintf("00%d", t.Millisecond)
+	} else if t.Millisecond < 100 {
+		millisecond = fmt.Sprintf("0%d", t.Millisecond)
+	}
+
+	return fmt.Sprintf("%v:%v:%v.%s", fieldToString(t.Hour), fieldToString(t.Minute), fieldToString(t.Second),
+		millisecond[:len(millisecond)-countTrailingZeros(millisecond)])
 }
 
 // NewTime takes a string and returns a time or an error
@@ -112,10 +139,25 @@ func NewTime(time string) (Time, error) {
 	}
 	second, err := strconv.ParseInt(matches[3], 10, 0)
 	if err != nil {
-		return Time{}, nil
+		return Time{}, err
+	}
+	millisecond := int64(0)
+	if matches[4] != "0" {
+		milli, err := strconv.ParseInt(matches[4], 10, 0)
+		if err != nil {
+			return Time{}, err
+		}
+
+		millisecond = milli
+		switch len(matches[4]) {
+		case 1:
+			millisecond = milli * 100
+		case 2:
+			millisecond = milli * 10
+		}
 	}
 
-	return Time{Hour: int(hour), Minute: int(minute), Second: int(second)}, nil
+	return Time{Hour: int(hour), Minute: int(minute), Second: int(second), Millisecond: int(millisecond)}, nil
 }
 
 // Instruction represents a part of a statement in which a particular
