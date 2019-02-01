@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/fatih/color"
+	"github.com/nsf/termbox-go"
 	"os"
 	"regexp"
 )
@@ -28,10 +30,37 @@ func main() {
 		fmt.Println("Debug mode enabled.")
 	}
 
+	if err := termbox.Init(); err != nil {
+		panic(err)
+	}
+	termbox.SetInputMode(termbox.InputEsc)
+
 	for {
 		reader := bufio.NewReader(os.Stdin)
+		color.Set(color.FgCyan)
 		fmt.Print(">>> ")
+
+	termLoop:
+		for {
+			switch event := termbox.PollEvent(); event.Type {
+			case termbox.EventKey:
+				if event.Key == termbox.KeyArrowUp {
+
+				} else if event.Key == termbox.KeyArrowDown {
+
+				} else if event.Key == termbox.KeyEnter {
+					panic("")
+					//break termLoop
+				}
+			case termbox.EventError:
+				panic(event.Err)
+			case termbox.EventInterrupt:
+				break termLoop
+			}
+		}
+
 		text, _ := reader.ReadString('\n')
+		color.Unset()
 		tokens, err := Tokenize(text)
 		if err != nil {
 			fmt.Print(err, "\n")

@@ -15,6 +15,9 @@ func Tokenize(str string) ([]*Token, error) {
 	tokens := make([]*Token, 0)
 	last := ""
 
+	openGroupCount := 0
+	closeGroupCount := 0
+
 	for i, v := range str {
 		c := string(v)
 		var next string
@@ -27,7 +30,7 @@ func Tokenize(str string) ([]*Token, error) {
 			tokens = append(tokens, &Token{"operator", c})
 
 			if OperatorRegex.MatchString(next) {
-				return nil, fmt.Errorf("invalid token set")
+				return nil, fmt.Errorf("tokenize: unexpected operator")
 			}
 		} else if NumberRegex.MatchString(c) {
 			if NumberRegex.MatchString(next) || next == ":" || next == "." {
@@ -44,16 +47,10 @@ func Tokenize(str string) ([]*Token, error) {
 			last += c
 		} else if c == "(" || c == "[" {
 			tokens = append(tokens, &Token{"groupOpen", c})
-
-			if next == "(" || next == "[" {
-				return nil, fmt.Errorf("invalid token set")
-			}
+			openGroupCount++
 		} else if c == ")" || c == "]" {
 			tokens = append(tokens, &Token{"groupClose", c})
-
-			if next == ")" || next == "]" {
-				return nil, fmt.Errorf("invalid token set")
-			}
+			closeGroupCount++
 		} else if WhitespaceRegex.MatchString(c) {
 			tokens = append(tokens, &Token{"whitespace", c})
 		} else {
@@ -66,11 +63,17 @@ func Tokenize(str string) ([]*Token, error) {
 			} else if TimeRegex.MatchString(last) {
 				tokens = append(tokens, &Token{"time", last})
 			} else {
-				return nil, fmt.Errorf("invalid token set (in final append)")
+				return nil, fmt.Errorf("tokenize: invalid time or number")
 			}
 
 			last = ""
 		}
+	}
+
+	// if an unequal number of group openings and closings were found, return error
+	if openGroupCount != closeGroupCount {
+		return nil, fmt.Errorf("tokenize: uneqal number of group openings and closings found (%d opened, "+
+			"%d closed)", openGroupCount, closeGroupCount)
 	}
 
 	return tokens, nil
