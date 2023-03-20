@@ -1,13 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 
-	"github.com/fatih/color"
-	"github.com/nsf/termbox-go"
+	"github.com/peterh/liner"
 )
 
 // DEBUG defines whether extra verbose information is printed
@@ -25,63 +25,58 @@ var TimeRegex = regexp.MustCompile(`^([\d][\d]?)?:([\d][\d])?:?(?::([\d][\d]))?(
 var NumberRegex = regexp.MustCompile(`^((\d+)?\.?)\d+$`)
 var WhitespaceRegex = regexp.MustCompile(`^([\s])$`)
 
+var history_fn = filepath.Join(os.TempDir(), "timecalc.tmp")
+
 func main() {
 	if os.Getenv("DEBUG") == "TRUE" {
 		DEBUG = true
 		fmt.Println("Debug mode enabled.")
 	}
 
-	if err := termbox.Init(); err != nil {
-		panic(err)
+	line := liner.NewLiner()
+	defer line.Close()
+
+	line.SetCtrlCAborts(true)
+
+	if f, err := os.Open(history_fn); err != nil {
+		line.ReadHistory(f)
+		f.Close()
 	}
-	termbox.SetInputMode(termbox.InputEsc)
 
 	for {
-		reader := bufio.NewReader(os.Stdin)
-		color.Set(color.FgCyan)
-		fmt.Print(">>> ")
-
-	termLoop:
-		for {
-			switch event := termbox.PollEvent(); event.Type {
-			case termbox.EventKey:
-				if event.Key == termbox.KeyArrowUp {
-
-				} else if event.Key == termbox.KeyArrowDown {
-
-				} else if event.Key == termbox.KeyEnter {
-					panic("")
-					//break termLoop
-				}
-			case termbox.EventError:
-				panic(event.Err)
-			case termbox.EventInterrupt:
-				break termLoop
+		input, err := line.Prompt(">>> ")
+		if err != nil {
+			if err == liner.ErrPromptAborted {
+				return
 			}
+			log.Fatalf("error reading line: %s", err)
 		}
 
-		text, _ := reader.ReadString('\n')
-		color.Unset()
-		tokens, err := Tokenize(text)
+		if input == "exit" {
+			return
+		}
+
+		line.AppendHistory(input)
+
+		tokens, err := Tokenize(input)
 		if err != nil {
-			fmt.Print(err, "\n")
+			fmt.Println(err)
+		}
+		if DEBUG {
+			fmt.Println(Reconstruct(tokens, true))
+		}
+
+		instructions, err := Parse(tokens)
+
+		if DEBUG {
+			PrintInstructions(instructions)
+			fmt.Println()
+		}
+
+		if err != nil {
+			fmt.Println(err)
 		} else {
-			if DEBUG {
-				fmt.Println(Reconstruct(tokens, true))
-			}
-
-			instructions, err := Parse(tokens)
-
-			if DEBUG {
-				PrintInstructions(instructions)
-				fmt.Println()
-			}
-
-			if err != nil {
-				fmt.Print(err, "\n")
-			} else {
-				fmt.Println(Compile(instructions))
-			}
+			fmt.Println(Compile(instructions))
 		}
 	}
 }
