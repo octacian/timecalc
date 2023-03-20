@@ -9,6 +9,8 @@
 
 ## <span id="overview">Overview</span>
 
+**WARNING**: Multiplication appears to be very broken in some instances. Also, order of operations via parenthesis is NOT functional beyond very basic grouping (see Usage).
+
 Sometimes just being able to add numbers isn't enough. Often, you need to perform some calculation that involves a period of time. Doing so with a traditional calculator requires constantly transposing the time to and from a natural number that the calculator can handle. This can become extremely time consuming and even unreliable.
 
 TimeCalc aims to solve this problem by providing a complete calculator interface exactly as you would expect, capable of addition, subtraction, multiplication, division, and even remainder operations, but with support for time. Time is formatted exactly as you might expect, right down to the millisecond – `hour:minute:second.millisecond` – and can be mixed in anywhere with any other calculations. Time takes precedence over a general number, ensuring that whenever a time is involved in an equation the output is always in time format.
@@ -79,3 +81,9 @@ Several shorthand structures are demonstrated above:
 - etc...
 
 Times are converted to and from numbers as a simple method of applying operations by way of transposing all fields to milliseconds. The max precision of a time is milliseconds, and as a result, when a number is converted to a time, the __ones place represents a single millisecond__.
+
+You can also eval mode to disable the TimeCalc REPL interface and remove any text decorations for programmatic usecases. For example:
+```bash
+$ timecalc -e 10:22 - 5:28
+04:54
+```
