@@ -1,4 +1,4 @@
-package main
+package time
 
 import (
 	"fmt"
@@ -230,26 +230,28 @@ func Parse(tokens []*Token) ([]*Instruction, error) {
 	return instructions, err
 }
 
-// PrintInstructions takes an array of instructions and prints them in plain text
-func PrintInstructions(instructions []*Instruction, indentation ...int) {
+// InstructionsToString takes an array of instructions and prints them in plain text
+func InstructionsToString(instructions []*Instruction, indentation ...int) string {
+	output := ""
 	indent := 0
 	if len(indentation) > 0 {
 		indent = indentation[0]
 	}
 
 	if indent == 0 {
-		fmt.Println("start with 0")
+		output += "start with 0"
 	}
 
 	indentStr := strings.Repeat("  ", indent)
 	for _, instruction := range instructions {
 		// if value is a subset of instructions, loop through with added indentation
 		if _, isList := instruction.Value.([]*Instruction); isList {
-			fmt.Printf("%s%s group (%d items)\n", indentStr, instruction.Operation,
+			output += fmt.Sprintf("%s%s group (%d items)\n", indentStr, instruction.Operation,
 				len(instruction.Value.([]*Instruction)))
-			PrintInstructions(instruction.Value.([]*Instruction), indent+1)
+			InstructionsToString(instruction.Value.([]*Instruction), indent+1)
 		} else {
-			fmt.Printf("%s%s %s\n", indentStr, instruction.Operation, instruction.Value.(Factor))
+			output += fmt.Sprintf("%s%s %s\n", indentStr, instruction.Operation, instruction.Value.(Factor))
 		}
 	}
+	return output
 }
