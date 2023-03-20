@@ -3,10 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/nsf/termbox-go"
 	"os"
 	"regexp"
+
+	"github.com/fatih/color"
+	"github.com/nsf/termbox-go"
 )
 
 // DEBUG defines whether extra verbose information is printed
